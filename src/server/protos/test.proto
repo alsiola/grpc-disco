@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package jrpc.test;
+
+service TestService {
+    rpc GetUsername (GetUserRequest) returns (GetUserResponse) {}
+}
+
+message GetUserRequest {
+    string userId = 1;
+}
+
+message GetUserResponse {
+    string name = 1;
+}
