@@ -6,7 +6,6 @@ const getUsername: grpc.handleUnaryCall<
     { userId: string },
     { name: string }
 > = (call, callback) => {
-    console.log(call.request);
     console.log(`Requester userId ${call.request.userId}`);
 
     callback(null, { name: "Alex" });
@@ -36,7 +35,8 @@ const server = createServer({
     protos,
     implementation: {
         TestService: { getUsername }
-    }
+    },
+    credentials: grpc.ServerCredentials.createInsecure()
 });
 
 server.start();

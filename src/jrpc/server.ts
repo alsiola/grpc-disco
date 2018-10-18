@@ -3,22 +3,24 @@ import express from "express";
 import * as loadProto from "@grpc/proto-loader";
 import * as fs from "fs";
 
-type Protos = Record<string, Proto>;
+type Protos = Record<string, Proto<any>>;
 
-interface Proto {
+interface Proto<T> {
     uri: string;
     service: string[];
     file: string;
+    testCalls: Record<string, Record<string, any>>;
 }
 
-type Implementation = any;
+type Implementation = Record<string, Record<string, any>>;
 
 export interface JRPCOpts {
     host: string;
     grpcPort: number;
     expressPort: number;
     protos: Protos;
-    implementation: Record<string, Implementation>;
+    implementation: Implementation;
+    credentials: grpc.ServerCredentials;
 }
 
 export const createServer = (opts: JRPCOpts) => {
@@ -40,11 +42,12 @@ const createGRPCServer = ({
     host,
     grpcPort,
     protos,
-    implementation
+    implementation,
+    credentials
 }: JRPCOpts) => {
     const server = new grpc.Server();
 
-    Object.entries(protos).forEach(([name, { uri, service, file }]) => {
+    Object.entries(protos).forEach(([name, { service, file }]) => {
         const testProto = loadProto.loadSync(file, {
             keepCase: true
         });
@@ -55,7 +58,7 @@ const createGRPCServer = ({
         );
     });
 
-    server.bind(`${host}:${grpcPort}`, grpc.ServerCredentials.createInsecure());
+    server.bind(`${host}:${grpcPort}`, credentials);
 
     return server;
 };
